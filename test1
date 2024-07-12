@@ -1,0 +1,34 @@
+
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/Manishamg/Project_J.git', branch: 'main'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sshagent(['SSH_GITHUB']) {
+                    sh '''
+                    echo "Starting SSH into EC2 instance..."
+                    ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa ec2-user@3.82.20.227 << EOF
+                    echo "SSH login successful. Changing directory to /var/www/html..."
+                    cd /var/www/html
+                    echo "npm installation command"
+                    sudo npm install --force
+                    echo "Removing existing files..."
+                    sudo rm -rf *
+                    echo "Cloning repository..."
+                    sudo git clone https://github.com/Manishamg/Project_J.git .
+                    echo "Restarting httpd service..."
+                    sudo systemctl restart httpd
+                    echo "Deployment completed."
+                    exit
+                    EOF
+                    '''
+                }
+            }
+        }
+    }
+}
