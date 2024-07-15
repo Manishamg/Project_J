@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: audit_client
+
+    - name: Build
+      run: npm run build
+      working-directory: audit_client
+
+    - name: Test
+      run: npm test
+      working-directory: audit_client
+
+    - name: Deploy
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: |
+        sudo apt-get install -y sshpass
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r audit_client/build/* ec2-user@54.198.204.77:/var/www/html/
