@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Define environment variables if needed
-        NODEJS_HOME = tool name: 'Nodejs', type: 'NodeJS'  // Ensure this matches the configured name in Jenkins
+        NODEJS_HOME = tool name: 'NodeJS', type: 'NodeJS'  // Ensure this matches the configured name in Jenkins
         PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
     }
 
