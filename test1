@@ -5,6 +5,15 @@ pipeline {
         PATH = "${env.NODEJS_HOME}/bin:${env.PATH}" }
 
     stages {
+        stage('Debug') {
+            steps {
+                script {
+                    echo "NODEJS_HOME: ${env.NODEJS_HOME}"
+                    sh 'printenv'
+                    sh 'npm --version'
+                }
+            }
+        }
         stage('Checkout') {
             steps {
                 git 'https://github.com/Manishamg/Project_J.git'
