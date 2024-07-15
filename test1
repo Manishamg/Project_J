@@ -1,34 +1,65 @@
-
 pipeline {
     agent any
+
+    environment {
+        // Define environment variables if needed
+        NODEJS_HOME = tool name: 'NodeJS', type: 'NodeJS'
+        PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Manishamg/Project_J.git', branch: 'main'
+                // Checkout code from GitHub
+                git 'https://github.com/Manishamg/Project_J.git'
             }
         }
-        stage('Deploy') {
+        
+        stage('Install Dependencies') {
             steps {
-                sshagent(['SSH_GITHUB']) {
-                    sh '''
-                    echo "Starting SSH into EC2 instance..."
-                    ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa ec2-user@3.82.20.227 << EOF
-                    echo "SSH login successful. Changing directory to /var/www/html..."
-                    cd /var/www/html
-                    echo "npm installation command"
-                    sudo npm install --force
-                    echo "Removing existing files..."
-                    sudo rm -rf *
-                    echo "Cloning repository..."
-                    sudo cp /var/lib/jenkins/Frontend_J/audit_client /var/www/html
-                    echo "Restarting httpd service..."
-                    sudo systemctl restart httpd
-                    echo "Deployment completed."
-                    exit
-                    EOF
-                    '''
+                dir('audit_client') {
+                    // Install project dependencies
+                    sh 'npm install'
                 }
             }
+        }
+        
+        stage('Build') {
+            steps {
+                dir('audit_client') {
+                    // Build the project (e.g., using webpack or any other build tool)
+                    sh 'npm run build'
+                }
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                dir('audit_client') {
+                    // Run tests (if any)
+                    sh 'npm test'
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                // Deploy the build to the web server
+                sshagent(['SSH_GITHUB']) {
+                    dir('audit_client/build') {
+                        sh 'scp -r * ec2-user@54.198.204.77:/var/www/html/'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment successful!'
+        }
+        failure {
+            echo 'Deployment failed!'
         }
     }
 }
