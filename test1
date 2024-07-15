@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         NODEJS_HOME = tool name: 'NodeJS', type: 'NodeJS'
-        PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
+        PATH = "${env.NODEJS_HOME}/bin:${env.PATH}" }
 
     stages {
         stage('Checkout') {
@@ -11,7 +11,7 @@ pipeline {
             }
         }
         
-        stages('Install Dependencies') {
+        stage('Install Dependencies') {
             steps {
                 dir('audit_client') {
                     sh 'npm install'
@@ -54,5 +54,4 @@ pipeline {
             echo 'Deployment failed!'
         }
     }
-}
 }
