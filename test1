@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Define environment variables if needed
-        NODEJS_HOME = tool name: 'NodeJS', type: 'NodeJS'
+        NODEJS_HOME = tool name: 'Nodejs', type: 'NodeJS'  // Ensure this matches the configured name in Jenkins
         PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
     }
 
@@ -45,7 +45,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 // Deploy the build to the web server
-                sshagent(['SSH_GITHUB']) {
+                sshagent(['SSH_GITHUB']) {  // Ensure this matches the SSH credentials ID configured in Jenkins
                     dir('audit_client/build') {
                         sh 'scp -r * ec2-user@54.198.204.77:/var/www/html/'
                     }
